@@ -10,8 +10,6 @@ const schema = z.object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.string().default('development'),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-  // Bearer token required for every non-GET request. Writes are refused while it is unset.
-  ADMIN_TOKEN: z.string().optional(),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
 });
 

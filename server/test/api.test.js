@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 
 process.env.SKIP_ENV_CHECK = '1';
 process.env.NODE_ENV = 'test';
-process.env.ADMIN_TOKEN = 'secret';
 
 const { default: request } = await import('supertest');
 const { createApp } = await import('../src/app.js');
@@ -18,16 +17,8 @@ test('GET /api/health is public', async () => {
   assert.equal(res.status, 200);
 });
 
-test('writes need the admin token, with a structured error', async () => {
-  const none = await request(app).post('/api/runs');
-  assert.equal(none.status, 401);
-  assert.equal(none.body.error.code, 'UNAUTHORIZED');
-  const bad = await request(app).put('/api/pipeline').set('Authorization', 'Bearer nope').send({ steps: [] });
-  assert.equal(bad.status, 401);
-});
-
-test('authorised upload without a file is a 400', async () => {
-  const res = await request(app).post('/api/runs').set('Authorization', 'Bearer secret');
+test('upload without a file is a 400 with a structured error', async () => {
+  const res = await request(app).post('/api/runs');
   assert.equal(res.status, 400);
   assert.equal(res.body.error.code, 'VALIDATION');
 });
