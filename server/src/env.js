@@ -10,15 +10,15 @@ const schema = z.object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.string().default('development'),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-  SUPABASE_URL: z.string().url('SUPABASE_URL must be a URL'),
-  SUPABASE_JWT_SECRET: z.string().optional(),
+  // Bearer token required for every non-GET request. Writes are refused while it is unset.
+  ADMIN_TOKEN: z.string().optional(),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
 });
 
 // Tests set SKIP_ENV_CHECK so they can run without real credentials.
 const source =
   process.env.SKIP_ENV_CHECK === '1'
-    ? { DATABASE_URL: 'postgres://test', SUPABASE_URL: 'https://test.supabase.co', ...process.env }
+    ? { DATABASE_URL: 'postgres://test', ...process.env }
     : process.env;
 
 const parsed = schema.safeParse(source);

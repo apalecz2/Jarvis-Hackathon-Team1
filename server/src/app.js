@@ -2,16 +2,17 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { env } from './env.js';
-import { requireAuth } from './middleware/requireAuth.js';
+import { requireAdminForWrites } from './middleware/requireAdmin.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import health from './routes/health.js';
-import datasets from './routes/datasets.js';
-import query from './routes/query.js';
+import accounts from './routes/accounts.js';
+import runs from './routes/runs.js';
+import flags from './routes/flags.js';
+import pipeline from './routes/pipeline.js';
 
 export function createApp() {
   const app = express();
@@ -23,14 +24,12 @@ export function createApp() {
 
   app.use('/api/health', health);
 
-  // Everything below requires a valid Supabase session token.
-  app.use('/api/datasets', requireAuth, datasets);
-  app.use(
-    '/api/query',
-    requireAuth,
-    rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false }),
-    query,
-  );
+  // Reads are open; any write needs the admin bearer token.
+  app.use('/api', requireAdminForWrites);
+  app.use('/api/accounts', accounts);
+  app.use('/api/runs', runs);
+  app.use('/api/flags', flags);
+  app.use('/api/pipeline', pipeline);
   app.use('/api', notFound);
 
   // Optional: serve the built React app from the API (single-host deploy).
