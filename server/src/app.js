@@ -1,29 +1,27 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
-import path from 'node:path';
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { env } from './env.js';
-import { requireAuth } from './middleware/requireAuth.js';
-import { errorHandler, notFound } from './middleware/errorHandler.js';
-import health from './routes/health.js';
-import datasets from './routes/datasets.js';
-import query from './routes/query.js';
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const path = require('node:path');
+const fs = require('node:fs');
+const { fileURLToPath } = require('node:url');
+const { env } = require('./env');
+const { requireAuth } = require('./middleware/requireAuth');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
+const health = require('./routes/health');
+const datasets = require('./routes/datasets');
+const query = require('./routes/query');
 
-export function createApp() {
+function createApp() {
   const app = express();
-  app.set('trust proxy', 1); // behind Render's proxy
+  app.set('trust proxy', 1);
   app.use(helmet());
   app.use(cors({ origin: env.CLIENT_ORIGIN.split(',').map((s) => s.trim()) }));
   app.use(express.json({ limit: '100kb' }));
   if (env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
   app.use('/api/health', health);
-
-  // Everything below requires a valid Supabase session token.
   app.use('/api/datasets', requireAuth, datasets);
   app.use(
     '/api/query',
@@ -33,8 +31,7 @@ export function createApp() {
   );
   app.use('/api', notFound);
 
-  // Optional: serve the built React app from the API (single-host deploy).
-  const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
+  const dist = path.resolve(path.dirname(fileURLToPath(require('node:url').pathToFileURL(__filename).href)), '../../client/dist');
   if (fs.existsSync(dist)) {
     app.use(express.static(dist));
     app.get('*', (req, res) => res.sendFile(path.join(dist, 'index.html')));
@@ -44,6 +41,5 @@ export function createApp() {
   return app;
 }
 
-// Vercel runs this file as the serverless entrypoint and needs the app as the default export.
-// Locally, src/index.js imports createApp and calls listen().
-export default createApp();
+module.exports = { createApp };
+module.exports.default = createApp();

@@ -1,11 +1,6 @@
-import { HttpError } from '../middleware/errorHandler.js';
+const { HttpError } = require('../middleware/errorHandler');
 
-/**
- * Friendly pre-check for user SQL. The real safety net is the read-only transaction
- * and the app_readonly role (see routes/query.js); this just gives clear error messages.
- * Returns the statement without trailing semicolons.
- */
-export function assertReadOnlySql(sql) {
+function assertReadOnlySql(sql) {
   const cleaned = String(sql || '').trim().replace(/;+\s*$/, '');
   if (!cleaned) throw new HttpError(400, 'Query is empty');
   if (cleaned.length > 5000) throw new HttpError(400, 'Query is too long');
@@ -15,3 +10,5 @@ export function assertReadOnlySql(sql) {
   }
   return cleaned;
 }
+
+module.exports = { assertReadOnlySql };

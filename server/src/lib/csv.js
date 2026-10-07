@@ -1,10 +1,9 @@
-import { parse } from 'csv-parse/sync';
-import { HttpError } from '../middleware/errorHandler.js';
+const { parse } = require('csv-parse/sync');
+const { HttpError } = require('../middleware/errorHandler');
 
 const MAX_COLUMNS = 100;
 
-/** snake_case-ify headers into safe, unique Postgres identifiers. */
-export function sanitizeHeaders(headers) {
+function sanitizeHeaders(headers) {
   const seen = new Map();
   return headers.map((raw, i) => {
     let name = String(raw).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
@@ -19,11 +18,10 @@ export function sanitizeHeaders(headers) {
 
 const isBlank = (v) => v === '' || v === null || v === undefined;
 
-export function inferType(values) {
+function inferType(values) {
   const vals = values.filter((v) => !isBlank(v)).map((v) => String(v).trim());
   if (vals.length === 0) return 'text';
   if (vals.every((v) => /^(true|false)$/i.test(v))) return 'boolean';
-  // Leading zeros (zip codes, ids like "007") must stay text.
   if (vals.every((v) => /^-?(0|[1-9]\d{0,14})$/.test(v))) return 'bigint';
   if (vals.every((v) => /^-?(0|[1-9]\d*)?\.?\d+([eE][-+]?\d+)?$/.test(v) && !/^-?0\d/.test(v))) return 'numeric';
   if (vals.every((v) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)))) return 'date';
@@ -31,8 +29,7 @@ export function inferType(values) {
   return 'text';
 }
 
-/** Parse a CSV buffer into { columns: [{name,type}], rows: any[][] }. */
-export function parseCsv(buffer) {
+function parseCsv(buffer) {
   let records;
   try {
     records = parse(buffer, { bom: true, skip_empty_lines: true, relax_column_count: true, trim: true });
@@ -49,3 +46,5 @@ export function parseCsv(buffer) {
   const rows = body.map((r) => names.map((_, i) => (isBlank(r[i]) ? null : r[i])));
   return { columns, rows };
 }
+
+module.exports = { parseCsv, sanitizeHeaders, inferType };

@@ -1,16 +1,15 @@
-import { ZodError } from 'zod';
+const { ZodError } = require('zod');
 
-export class HttpError extends Error {
+class HttpError extends Error {
   constructor(status, message) {
     super(message);
     this.status = status;
   }
 }
 
-export const notFound = (req, res) => res.status(404).json({ error: 'Not found' });
+const notFound = (req, res) => res.status(404).json({ error: 'Not found' });
 
-// eslint-disable-next-line no-unused-vars
-export function errorHandler(err, req, res, next) {
+function errorHandler(err, req, res, next) {
   if (err instanceof ZodError) {
     return res.status(400).json({ error: 'Invalid request', details: err.issues });
   }
@@ -22,5 +21,6 @@ export function errorHandler(err, req, res, next) {
   res.status(status).json({ error: status >= 500 ? 'Internal server error' : err.message });
 }
 
-/** Wrap async route handlers so rejected promises reach errorHandler (Express 4). */
-export const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+module.exports = { HttpError, notFound, errorHandler, wrap };

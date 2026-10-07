@@ -1,13 +1,12 @@
-import { Router } from 'express';
-import { z } from 'zod';
-import { pool } from '../db/pool.js';
-import { assertReadOnlySql } from '../lib/sqlGuard.js';
-import { HttpError, wrap } from '../middleware/errorHandler.js';
+const { Router } = require('express');
+const { z } = require('zod');
+const { pool } = require('../db/pool');
+const { assertReadOnlySql } = require('../lib/sqlGuard');
+const { HttpError, wrap } = require('../middleware/errorHandler');
 
 const router = Router();
 const ROW_LIMIT = 1000;
 
-// Examples written for db/seed/sample.csv (orders). {{table}} is replaced by the client.
 const SAVED = [
   {
     title: 'Revenue by region (GROUP BY + HAVING)',
@@ -69,11 +68,9 @@ router.post('/', wrap(async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN READ ONLY');
-    // Drop to a role that can only read the uploads schema, cap runtime, and default to uploads.
     await client.query('SET LOCAL ROLE app_readonly');
     await client.query("SET LOCAL statement_timeout = '5s'");
     await client.query('SET LOCAL search_path = uploads');
-    // Newlines around the statement so a trailing "-- comment" can't swallow the closing paren.
     const result = await client.query(`SELECT * FROM (\n${statement}\n) AS q LIMIT ${ROW_LIMIT + 1}`);
     await client.query('ROLLBACK');
     const truncated = result.rows.length > ROW_LIMIT;
@@ -84,7 +81,6 @@ router.post('/', wrap(async (req, res) => {
     });
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
-    // Postgres error classes 42 (syntax/permission), 22 (data), 57 (timeout), 0A are user-SQL problems.
     if (err.code && /^(42|22|57|0A)/.test(err.code)) throw new HttpError(400, err.message);
     throw err;
   } finally {
@@ -92,4 +88,4 @@ router.post('/', wrap(async (req, res) => {
   }
 }));
 
-export default router;
+module.exports = router;

@@ -1,0 +1,4 @@
+rowNumber,transactionId,field,rawValue,problem
+65,TX00063,amount,"""12.5O""",MALFORMED_AMOUNT
+97,TX00094,type,"""purchase""",NORMALIZED_CASE
+198,TX00195,amount,"""15.005""",MALFORMED_AMOUNT

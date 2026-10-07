@@ -1,9 +1,9 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import dotenv from 'dotenv';
-import { z } from 'zod';
+const path = require('node:path');
+const { fileURLToPath } = require('node:url');
+const dotenv = require('dotenv');
+const { z } = require('zod');
 
-const here = path.dirname(fileURLToPath(import.meta.url));
+const here = path.dirname(fileURLToPath(require('node:url').pathToFileURL(__filename).href));
 dotenv.config({ path: path.resolve(here, '../../.env') });
 
 const schema = z.object({
@@ -15,7 +15,6 @@ const schema = z.object({
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
 });
 
-// Tests set SKIP_ENV_CHECK so they can run without real credentials.
 const source =
   process.env.SKIP_ENV_CHECK === '1'
     ? { DATABASE_URL: 'postgres://test', SUPABASE_URL: 'https://test.supabase.co', ...process.env }
@@ -28,4 +27,5 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-export const env = parsed.data;
+const env = parsed.data;
+module.exports = { env };

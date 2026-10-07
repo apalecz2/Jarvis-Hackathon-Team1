@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import multer from 'multer';
-import { z } from 'zod';
-import { pool, query, withTransaction } from '../db/pool.js';
-import { parseCsv } from '../lib/csv.js';
-import { HttpError, wrap } from '../middleware/errorHandler.js';
+const { Router } = require('express');
+const multer = require('multer');
+const { z } = require('zod');
+const { pool, query, withTransaction } = require('../db/pool');
+const { parseCsv } = require('../lib/csv');
+const { HttpError, wrap } = require('../middleware/errorHandler');
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -26,8 +26,6 @@ router.post('/', upload.single('file'), wrap(async (req, res) => {
   const dataset = await withTransaction(async (client) => {
     const { rows: [{ id }] } = await client.query("SELECT nextval('datasets_id_seq') AS id");
     const tableName = `ds_${id}`;
-    // Column names were sanitized to [a-z0-9_] in lib/csv.js, and types come from a fixed set,
-    // so interpolating them into DDL is safe. Values always go through parameters.
     const colDefs = columns.map((c) => `"${c.name}" ${c.type}`).join(', ');
     await client.query(`CREATE TABLE uploads."${tableName}" (${colDefs})`);
 
@@ -79,4 +77,4 @@ router.delete('/:id', wrap(async (req, res) => {
   res.status(204).end();
 }));
 
-export default router;
+module.exports = router;

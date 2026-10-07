@@ -1,5 +1,5 @@
-import { env } from './env.js';
-import { createApp } from './app.js';
+const { env } = require('./env');
+const { createApp } = require('./app');
 
 createApp().listen(env.PORT, () => {
   console.log(`API listening on http://localhost:${env.PORT}`);
