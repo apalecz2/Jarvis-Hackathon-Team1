@@ -1,19 +1,38 @@
-import { Link, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
+import { getToken, setToken } from '../lib/api';
 
 export default function Layout() {
-  const { user, signOut } = useAuth();
+  const [token, setTok] = useState(getToken());
+  const [editing, setEditing] = useState(false);
+
+  function save(e) {
+    e.preventDefault();
+    setToken(token.trim());
+    setEditing(false);
+  }
+
   return (
     <>
       <header className="nav">
-        <Link to="/" className="brand">Data Explorer</Link>
+        <NavLink to="/" className="brand">CBOJ Transactions</NavLink>
         <nav>
-          <Link to="/">Explore</Link>
-          <Link to="/upload">Upload</Link>
+          <NavLink to="/" end>Upload</NavLink>
+          <NavLink to="/runs">Runs</NavLink>
+          <NavLink to="/flags">Review queue</NavLink>
+          <NavLink to="/accounts">Accounts</NavLink>
         </nav>
         <span className="spacer" />
-        <span className="muted">{user?.email}</span>
-        <button className="secondary" onClick={signOut}>Sign out</button>
+        {editing ? (
+          <form className="row tight" onSubmit={save}>
+            <input type="password" placeholder="Admin token" value={token} onChange={(e) => setTok(e.target.value)} autoFocus />
+            <button>Save</button>
+          </form>
+        ) : (
+          <button className="secondary" onClick={() => setEditing(true)}>
+            {getToken() ? 'Admin token set' : 'Set admin token'}
+          </button>
+        )}
       </header>
       <main className="container">
         <Outlet />
