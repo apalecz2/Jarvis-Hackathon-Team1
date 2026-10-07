@@ -20,6 +20,7 @@ export default function Layout() {
           <NavLink to="/" end>Upload</NavLink>
           <NavLink to="/runs">Runs</NavLink>
           <NavLink to="/flags">Review queue</NavLink>
+          <NavLink to="/pipeline">Pipeline</NavLink>
           <NavLink to="/accounts">Accounts</NavLink>
         </nav>
         <span className="spacer" />

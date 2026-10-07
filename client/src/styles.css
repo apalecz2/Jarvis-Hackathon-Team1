@@ -75,3 +75,18 @@ tr.row-bad td { background: color-mix(in srgb, var(--danger) 7%, transparent); }
 .seg button { background: transparent; color: var(--text); border-radius: 0; padding: 6px 14px; }
 .seg button.active { background: var(--primary); color: #fff; }
 .pager { justify-content: center; align-items: center; margin-top: 12px; }
+
+/* Pipeline configuration */
+.step { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+.step.off { opacity: 0.6; }
+.step-head { display: flex; gap: 12px; align-items: center; }
+.step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--border); display: grid; place-items: center; font-weight: 700; font-size: 0.8rem; flex: none; }
+.step-head .grow { min-width: 0; }
+.step-head .row button { padding: 4px 10px; }
+.switch { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--text); white-space: nowrap; }
+.switch input, .check input { width: auto; display: inline-block; margin: 0; }
+.params { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.params label { margin: 0; min-width: 180px; }
+.field-label { font-size: 0.85rem; color: var(--muted); }
+.checks { display: flex; gap: 14px; margin-top: 6px; }
+.check { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--text); }

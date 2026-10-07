@@ -1,25 +1,30 @@
 import { ZodError } from 'zod';
 
 export class HttpError extends Error {
-  constructor(status, message) {
+  constructor(status, message, code) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
-export const notFound = (req, res) => res.status(404).json({ error: 'Not found' });
+const send = (res, status, code, message) => res.status(status).json({ error: { code, message } });
+
+export const notFound = (req, res) => send(res, 404, 'NOT_FOUND', 'Not found');
 
 // eslint-disable-next-line no-unused-vars
 export function errorHandler(err, req, res, next) {
   if (err instanceof ZodError) {
-    return res.status(400).json({ error: 'Invalid request', details: err.issues });
+    const i = err.issues[0];
+    return send(res, 400, 'VALIDATION', `${i.path.join('.') || 'request'}: ${i.message}`);
   }
-  if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ error: 'File too large (max 10 MB)' });
-  }
+  if (err.code === 'LIMIT_FILE_SIZE') return send(res, 413, 'FILE_TOO_LARGE', 'File too large (max 5 MB)');
   const status = err.status || 500;
-  if (status >= 500) console.error(err);
-  res.status(status).json({ error: status >= 500 ? 'Internal server error' : err.message });
+  if (status >= 500) {
+    console.error(err);
+    return send(res, status, 'INTERNAL', 'Internal server error');
+  }
+  send(res, status, err.code || 'ERROR', err.message);
 }
 
 /** Wrap async route handlers so rejected promises reach errorHandler (Express 4). */
