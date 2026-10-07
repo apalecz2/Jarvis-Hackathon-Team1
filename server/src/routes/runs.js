@@ -40,6 +40,21 @@ router.get('/', wrap(async (req, res) => {
   res.json(rows.map(withNums));
 }));
 
+// Wipe all processing data (runs, transactions, outcomes, flags, ledger) but keep accounts.
+// Every balance change went through the ledger, so subtracting it restores the opening balances.
+router.delete('/', wrap(async (req, res) => {
+  await withTransaction(async (client) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('cboj_process_run'))");
+    await client.query(
+      `UPDATE accounts a SET balance = a.balance - l.total
+         FROM (SELECT account_id, SUM(delta) AS total FROM account_ledger GROUP BY account_id) l
+        WHERE a.account_id = l.account_id`,
+    );
+    await client.query('TRUNCATE review_flags, account_ledger, outcomes, transactions, processing_runs RESTART IDENTITY');
+  });
+  res.status(204).end();
+}));
+
 router.post('/', upload.single('file'), wrap(async (req, res) => {
   if (!req.file) throw new HttpError(400, 'Attach a CSV file in the "file" field', 'VALIDATION');
   const rows = parseTransactions(req.file.buffer);

@@ -1,17 +1,31 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { dateTime, items } from '../lib/format';
 import { ErrorMsg, Loading, StatusBadge } from '../components/Bits';
 
 export default function Runs() {
+  const qc = useQueryClient();
   const { data, error, isLoading } = useQuery({ queryKey: ['runs'], queryFn: () => api('/runs') });
+  const reset = useMutation({
+    mutationFn: () => api('/runs', { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries(), // runs, flags and account balances all change
+  });
   if (isLoading) return <Loading />;
   const runs = items(data);
+  const confirmReset = () =>
+    confirm('Delete all runs, transactions, outcomes, flags and ledger entries?\n\nAccounts are kept and their balances are restored to the original values. This cannot be undone.') &&
+    reset.mutate();
   return (
     <div className="card">
-      <h1>Runs</h1>
+      <div className="row between">
+        <h1>Runs</h1>
+        <button className="secondary danger" disabled={reset.isPending || runs.length === 0} onClick={confirmReset}>
+          {reset.isPending ? 'Resetting...' : 'Reset all data'}
+        </button>
+      </div>
       <ErrorMsg error={error} />
+      <ErrorMsg error={reset.error} />
       {runs.length === 0 ? (
         <p className="muted">No runs yet. <Link to="/">Upload a file</Link>.</p>
       ) : (

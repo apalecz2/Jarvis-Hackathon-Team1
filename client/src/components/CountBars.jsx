@@ -10,13 +10,13 @@ export default function CountBars({ title, counts, color }) {
       {data.length === 0 ? (
         <p className="muted">None.</p>
       ) : (
-        <ResponsiveContainer width="100%" height={Math.max(120, data.length * 38 + 30)}>
+        <ResponsiveContainer width="100%" height={Math.max(120, data.length * 34 + 30)}>
           <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-            <XAxis type="number" allowDecimals={false} />
-            <YAxis type="category" dataKey="name" width={170} tick={{ fontSize: 12 }} />
+            <CartesianGrid horizontal={false} />
+            <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} />
+            <YAxis type="category" dataKey="name" width={170} axisLine={false} tickLine={false} />
             <Tooltip />
-            <Bar dataKey="value" fill={color} radius={[0, 4, 4, 0]} />
+            <Bar dataKey="value" fill={color} radius={[0, 4, 4, 0]} barSize={16} />
           </BarChart>
         </ResponsiveContainer>
       )}

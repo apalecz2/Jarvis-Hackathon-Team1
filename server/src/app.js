@@ -6,7 +6,6 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { env } from './env.js';
-import { requireAdminForWrites } from './middleware/requireAdmin.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import health from './routes/health.js';
 import accounts from './routes/accounts.js';
@@ -24,8 +23,6 @@ export function createApp() {
 
   app.use('/api/health', health);
 
-  // Reads are open; any write needs the admin bearer token.
-  app.use('/api', requireAdminForWrites);
   app.use('/api/accounts', accounts);
   app.use('/api/runs', runs);
   app.use('/api/flags', flags);

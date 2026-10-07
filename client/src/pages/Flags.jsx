@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { items, money } from '../lib/format';
+import { items, label, money } from '../lib/format';
 import { ErrorMsg, FlagBadge, Loading } from '../components/Bits';
 
 export default function Flags() {
@@ -35,7 +35,7 @@ export default function Flags() {
                     <td className="wrap">{f.detail}</td>
                     <td>{f.runId != null ? <Link to={`/runs/${f.runId}`}>#{f.runId}</Link> : '—'}</td>
                     <td>{t.transactionId ?? '—'}</td>
-                    <td>{t.type ?? '—'}</td>
+                    <td>{label(t.type)}</td>
                     <td>{t.fromAccount ?? '—'}</td>
                     <td>{t.toAccount ?? '—'}</td>
                     <td className="num">{money(t.amount)}</td>

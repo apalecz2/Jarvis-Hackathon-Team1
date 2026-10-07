@@ -1,18 +1,8 @@
 const BASE = import.meta.env.VITE_API_URL || '';
-const TOKEN_KEY = 'adminToken';
 
-export const getToken = () => {
-  try { return localStorage.getItem(TOKEN_KEY) || ''; } catch { return ''; }
-};
-export const setToken = (t) => {
-  try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch { /* storage blocked */ }
-};
-
-/** fetch wrapper: bearer ADMIN_TOKEN on writes, parses JSON, throws Error(message) from { error: { code, message } }. */
+/** fetch wrapper: parses JSON, throws Error(message) from { error: { code, message } }. */
 export async function api(path, { method = 'GET', body, form, text } = {}) {
   const headers = {};
-  const token = getToken();
-  if (token && method !== 'GET') headers.Authorization = `Bearer ${token}`;
   if (body) headers['Content-Type'] = 'application/json';
 
   let res;
